@@ -1,0 +1,10 @@
+{
+  "name": "yusuf-barlak-vektorler-odevi",
+  "private": true,
+  "type": "module",
+  "description": "Yusuf Barlak Vektörler Ödevi — Fizik I eğik atış oyunu",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "dev": "node scripts/serve.mjs 8080"
+  }
+}

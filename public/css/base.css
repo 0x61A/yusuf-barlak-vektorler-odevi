@@ -1,0 +1,326 @@
+/* Yusuf Barlak Vektörler Ödevi — ortak tasarım tokenları ve bileşenler (açık, sade mobil oyun stili) */
+
+:root {
+  color-scheme: light;
+  --ink: #1f2933;
+  --ink-2: #4a5563;
+  --ink-3: #8792a2;
+  --paper: #ffffff;
+  --paper-2: #f6f3ec;
+  --line: #e4ded3;
+  --sky: #9fd3f5;
+  --sky-2: #e3f2fc;
+  --grass: #5f9a35;
+  --green: #3fa34d;
+  --green-d: #2a7a36;
+  --blue: #2f80ed;
+  --blue-d: #1d5fc0;
+  --orange: #f59f00;
+  --orange-d: #c27c00;
+  --red: #e5483f;
+  --red-d: #b3302a;
+  --gray: #eef0f3;
+  --gray-d: #c3c9d1;
+  --vec-v: #f08c00;
+  --vec-x: #1c7ed6;
+  --vec-y: #e03131;
+  --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --font-ui: 'Nunito', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --radius: 20px;
+  --radius-s: 14px;
+  --shadow: 0 6px 18px rgba(31, 41, 51, 0.16);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--blue-d);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.gorunmez {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Kart (popup paneli) */
+.kart {
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Tombul mobil oyun butonu: renkli yüz + koyu alt kenar, basınca çöker */
+.btn {
+  --c: var(--blue);
+  --cd: var(--blue-d);
+  --fg: #fff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 48px;
+  padding: 0.5em 1.4em;
+  border: 0;
+  border-radius: 16px;
+  background: var(--c);
+  color: var(--fg);
+  box-shadow: 0 5px 0 var(--cd), 0 9px 16px rgba(31, 41, 51, 0.18);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
+}
+
+.btn:hover {
+  filter: brightness(1.06);
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--cd), 0 3px 6px rgba(31, 41, 51, 0.18);
+}
+
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--green {
+  --c: var(--green);
+  --cd: var(--green-d);
+}
+
+.btn--orange {
+  --c: var(--orange);
+  --cd: var(--orange-d);
+}
+
+.btn--red {
+  --c: var(--red);
+  --cd: var(--red-d);
+}
+
+.btn--gray {
+  --c: var(--gray);
+  --cd: var(--gray-d);
+  --fg: var(--ink);
+}
+
+.btn--genis {
+  width: 100%;
+}
+
+/* Popup (dialog) */
+dialog {
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 22px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 18px 50px rgba(31, 41, 51, 0.3);
+}
+
+dialog[open] {
+  animation: pop 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+dialog::backdrop {
+  background: rgba(20, 30, 45, 0.45);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+.popup-baslik {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink);
+}
+
+.kapat {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gray);
+  color: var(--ink-2);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kapat:hover {
+  background: var(--gray-d);
+}
+
+.secenek-grup {
+  border: 0;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.secenek-grup legend {
+  margin-bottom: 8px;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.secenekler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.secenek {
+  position: relative;
+}
+
+.secenek input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.secenek span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--gray);
+  color: var(--ink-2);
+  font-weight: 700;
+  transition: background 0.15s, color 0.15s;
+}
+
+.secenek input:checked + span {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--blue-d);
+}
+
+.secenek input:focus-visible + span {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.dlg-alt {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.not {
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+.anahtar-tablo {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.anahtar-tablo th,
+.anahtar-tablo td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.anahtar-tablo th {
+  color: var(--ink-2);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.8em;
+  padding: 0 0.45em;
+  border: 1px solid var(--gray-d);
+  border-bottom-width: 3px;
+  border-radius: 7px;
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  text-align: center;
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

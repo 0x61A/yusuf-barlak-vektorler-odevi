@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fizik konusu · Yusuf Barlak Vektörler Ödevi</title>
+  <meta name="description" content="Yusuf Barlak Vektörler Ödevi oyununun fiziği: vektör bileşenleri, eğik atış kinematiği, Euler yöntemi ve hata analizi, sekme (restitüsyon), momentum korunumu ve NPC nişan denklemi.">
+  <meta name="theme-color" content="#9fd3f5">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/fizik.css">
+  <script defer src="vendor/katex/katex.min.js"></script>
+  <script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+</head>
+<body class="fizik">
+  <header class="fz-ust">
+    <a class="geri" href="index.html">← Yusuf Barlak Vektörler Ödevi</a>
+    <a class="btn btn--blue kucuk" href="oyun.html?mod=deney">Deney modunda dene</a>
+  </header>
+
+  <div class="duzen">
+    <nav class="icindekiler" aria-label="İçindekiler">
+      <p class="ic-baslik">İçindekiler</p>
+      <ol>
+        <li><a href="#vektor">Vektörler ve bileşenler</a></li>
+        <li><a href="#kinematik">Eğik atış kinematiği</a></li>
+        <li><a href="#gezegen">Farklı gezegenler</a></li>
+        <li><a href="#euler">Sayısal çözüm: Euler</a></li>
+        <li><a href="#carpisma">Çarpışma ve yüzey normali</a></li>
+        <li><a href="#sekme">Sekme ve restitüsyon</a></li>
+        <li><a href="#parcali">Parçalanma ve momentum</a></li>
+        <li><a href="#agir">Ağır mermi ve Galileo</a></li>
+        <li><a href="#npc">NPC nasıl nişan alır</a></li>
+        <li><a href="#hasar">Hasar modeli</a></li>
+        <li><a href="#kunye">Künye</a></li>
+      </ol>
+    </nav>
+
+    <main class="makale">
+      <h1>Oyunun arkasındaki fizik</h1>
+      <p class="giris-yazi">Bu oyunda her atış aynı soruyu çözer: başlangıç hız vektörü belli olan bir cisim yalnızca yerçekimi etkisinde nereye düşer? Oyun bu soruyu kapalı formülle değil, her saniye 120 küçük adımla sayısal olarak çözer. Bu sayfa önce analitik çözümü türetir, sonra oyunun kullandığı sayısal yöntemi, hatasını ve özel mermilerdeki fiziği anlatır.</p>
+      <p class="varsayim"><b>Varsayımlar:</b> hava direnci yok, \(g\) sabit, hareket tek düzlemde (x yatay, y düşey). Birimler SI: metre, saniye, kilogram. Açı \(\theta\), +x ekseninden saat yönünün tersine ölçülür.</p>
+
+      <section id="vektor">
+        <h2><span class="no mono">01</span> Vektörler ve bileşenler</h2>
+        <p>Namludan çıkan merminin hızı bir vektördür: büyüklüğü \(V\) (oyundaki "güç"), yönü \(\theta\). Hareketi incelemek için bu vektörü birbirine dik iki bileşene ayırırız:</p>
+        $$\vec v_0 = V\cos\theta\,\hat\imath + V\sin\theta\,\hat\jmath \qquad\Longrightarrow\qquad V_x = V\cos\theta,\quad V_y = V\sin\theta$$
+        <p>Bileşenlerden büyüklük geri bulunabilir: \(\sqrt{V_x^2+V_y^2} = V\sqrt{\cos^2\theta+\sin^2\theta} = V\). Açı 90°'yi geçince \(\cos\theta < 0\) olur ve \(V_x\) negatif çıkar: mermi sola gider. Oyunda açının 0°–180° arasında tek bir formülle çalışmasının nedeni budur.</p>
+
+        <figure class="demo panel">
+          <canvas id="vektor-demo" height="300" aria-label="Vektör bileşenleri çizimi"></canvas>
+          <div class="demo-kontrol">
+            <label><span>θ</span><input type="range" id="vd-aci" min="0" max="180" step="1" value="35"><output id="vd-aci-o" class="mono">35°</output></label>
+            <label><span>V</span><input type="range" id="vd-hiz" min="5" max="55" step="1" value="40"><output id="vd-hiz-o" class="mono">40 m/s</output></label>
+          </div>
+          <figcaption id="vd-sonuc" class="mono demo-sonuc"></figcaption>
+        </figure>
+        <p>Oyunda nişan alırken namlunun ucunda bu üç ok görünür: turuncu \(\vec V\), mavi \(V_x\), kırmızı \(V_y\). Fizik panelindeki satırlar da aynı çarpımı yazar.</p>
+      </section>
+
+      <section id="kinematik">
+        <h2><span class="no mono">02</span> Eğik atış kinematiği</h2>
+        <p>Atıştan sonra mermiye etki eden tek kuvvet ağırlıktır, dolayısıyla ivme sabittir: \(\vec a = -g\,\hat\jmath\). Hızı ve konumu bulmak için ivmeyi zamana göre iki kez integre ederiz:</p>
+        $$\vec v(t) = \vec v_0 + \int_0^t \vec a\,dt' = \vec v_0 + \vec a\,t \qquad \vec r(t) = \vec r_0 + \int_0^t \vec v\,dt' = \vec r_0 + \vec v_0 t + \tfrac12\vec a\,t^2$$
+        <p>Bileşen bileşen yazınca yatay ve düşey hareketin birbirinden bağımsız olduğu görülür:</p>
+        $$v_x(t) = V\cos\theta \qquad v_y(t) = V\sin\theta - g\,t$$
+        $$x(t) = x_0 + V\cos\theta\;t \qquad y(t) = y_0 + V\sin\theta\;t - \tfrac12 g\,t^2$$
+        <p>Yatayda ivme yok, \(v_x\) sabit kalır. Düşeyde \(v_y\) her saniye \(g\) kadar azalır, tepe noktasında sıfır olur, sonra işaret değiştirir. Oyunda uçan merminin üzerindeki pembe ok tam olarak bunu gösterir.</p>
+
+        <h3>Uçuş süresi, maksimum yükseklik, menzil</h3>
+        <p>Atış ve düşüş aynı yükseklikte olsun (\(y_0 = 0\), düz zemin).</p>
+        <ul class="turetim">
+          <li><b>Tepe zamanı:</b> \(v_y(t_h) = 0 \Rightarrow t_h = \dfrac{V\sin\theta}{g}\)</li>
+          <li><b>Maksimum yükseklik:</b> \(h_{max} = y(t_h) = \dfrac{V^2\sin^2\theta}{2g}\)</li>
+          <li><b>Uçuş süresi:</b> \(y(T) = 0,\ T \neq 0 \Rightarrow T = \dfrac{2V\sin\theta}{g} = 2t_h\)</li>
+          <li><b>Menzil:</b> \(R = V\cos\theta\cdot T = \dfrac{2V^2\sin\theta\cos\theta}{g} = \dfrac{V^2\sin 2\theta}{g}\)</li>
+        </ul>
+        <p>\(\sin 2\theta\) en büyük değeri 1'i \(\theta = 45°\)'de alır, bu yüzden en uzak atış \(R_{max} = V^2/g\)'dir. Ayrıca \(\sin 2\theta = \sin(180° - 2\theta) = \sin 2(90° - \theta)\) olduğundan <b>tümler açılar</b> (örneğin 30° ve 60°) aynı noktaya düşer: biri alçak ve hızlı, diğeri yüksek ve yavaş bir yay çizer. NPC'nin iki farklı çözüm bulmasının nedeni de budur.</p>
+
+        <h3>Yörünge bir paraboldür</h3>
+        <p>\(x\) denkleminden \(t = x/(V\cos\theta)\) çekilip \(y\)'de yerine konursa zaman yok olur:</p>
+        $$y(x) = x\tan\theta - \frac{g}{2V^2\cos^2\theta}\,x^2$$
+        <p>Bu, \(x\)'in ikinci dereceden fonksiyonudur, yani yol bir paraboldür.</p>
+
+        <figure class="demo panel">
+          <canvas id="yorunge-demo" height="340" aria-label="Eğik atış yörüngesi çizimi"></canvas>
+          <div class="demo-kontrol">
+            <label><span>θ</span><input type="range" id="yd-aci" min="5" max="85" step="1" value="30"><output id="yd-aci-o" class="mono">30°</output></label>
+            <label><span>V</span><input type="range" id="yd-hiz" min="5" max="60" step="1" value="40"><output id="yd-hiz-o" class="mono">40 m/s</output></label>
+            <label><span>g</span><select id="yd-g"></select></label>
+            <label class="kutu"><input type="checkbox" id="yd-tumler" checked> Tümler açıyı göster</label>
+            <label class="kutu"><input type="checkbox" id="yd-vektor" checked> Hız vektörleri</label>
+          </div>
+          <figcaption id="yd-sonuc" class="mono demo-sonuc"></figcaption>
+        </figure>
+      </section>
+
+      <section id="gezegen">
+        <h2><span class="no mono">03</span> Farklı gezegenler</h2>
+        <p>Formüllerde \(g\) paydada: \(T\), \(h_{max}\) ve \(R\) üçü de \(1/g\) ile orantılı. Aynı atış \(g\) altıda birine inince altı kat uzağa ve altı kat yükseğe gider. Deney modunda gezegen değiştirerek bunu ölçebilirsin.</p>
+        <table class="tablo mono">
+          <caption>V = 40 m/s, θ = 45° için düz zemin değerleri</caption>
+          <thead><tr><th scope="col">Gök cismi</th><th scope="col">g (m/s²)</th><th scope="col">R (m)</th><th scope="col">h<sub>max</sub> (m)</th><th scope="col">T (s)</th></tr></thead>
+          <tbody id="gezegen-tablo"></tbody>
+        </table>
+      </section>
+
+      <section id="euler">
+        <h2><span class="no mono">04</span> Sayısal çözüm: Euler yöntemi</h2>
+        <p>Analitik çözüm düz zeminde güzel çalışır ama engebeli arazi, sekme ve parçalanma işin içine girince kapalı formül kurmak zorlaşır. Oyun bu yüzden hareketi bir <b>diferansiyel denklem</b> olarak ele alır ve küçük zaman adımlarıyla ilerletir:</p>
+        $$\frac{d\vec r}{dt} = \vec v, \qquad \frac{d\vec v}{dt} = \vec a = (0,\,-g)$$
+        <p>Türevin tanımı \(\dfrac{d\vec r}{dt} = \lim_{\Delta t\to 0}\dfrac{\vec r(t+\Delta t)-\vec r(t)}{\Delta t}\) olduğundan, küçük ama sonlu bir \(\Delta t\) için:</p>
+        $$\vec r_{n+1} = \vec r_n + \vec v_n\,\Delta t \qquad \vec v_{n+1} = \vec v_n + \vec a\,\Delta t$$
+        <p>Bu, <b>ileri (açık) Euler</b> yöntemidir. Oyunda \(\Delta t = 1/120\) s sabittir, yani bir saniyelik uçuş 120 adımda hesaplanır. Ekranın kaç FPS çizdiği sonucu değiştirmez; fizik her zaman aynı adımla ilerler. Oyundaki kod (<span class="mono">js/physics/projectile.js</span>):</p>
+        <pre class="kod"><code>export function eulerStep(p, g, dt) {
+  p.x += p.vx * dt;   // x ← x + vx·Δt
+  p.y += p.vy * dt;   // y ← y + vy·Δt
+  p.vy -= g * dt;     // vy ← vy − g·Δt   (vx değişmez: aₓ = 0)
+  p.t += dt;
+}</code></pre>
+
+        <h3>Yöntemin hatası</h3>
+        <p>Gerçek konum Taylor serisiyle \(\vec r(t+\Delta t) = \vec r + \vec v\,\Delta t + \tfrac12\vec a\,\Delta t^2 + \dots\) şeklindedir. Euler son terimi atar, bu yüzden her adımda yaptığı <b>yerel hata</b> \(O(\Delta t^2)\) mertebesindedir. \(t\) anına varmak için \(n = t/\Delta t\) adım gerekir; hatalar birikince <b>global hata</b> \(O(\Delta t)\) olur.</p>
+        <p>Sabit ivmede bu hata tam hesaplanabilir. \(v_k = V_y - g k\Delta t\) olduğundan:</p>
+        $$y_n = y_0 + \sum_{k=0}^{n-1} v_k\,\Delta t = y_0 + V_y\,n\Delta t - g\,\Delta t^2\,\frac{n(n-1)}{2}$$
+        $$y_n - y(t_n) = \tfrac12\,g\,\Delta t\;t_n$$
+        <p>Yani Euler mermiyi her an gerçekte olduğundan \(\tfrac12 g\Delta t\,t\) kadar yukarıda tutar ve doğrusal olarak büyür. 5 saniyelik bir uçuşta bu \(\tfrac12\cdot 9.81\cdot\tfrac{1}{120}\cdot 5 \approx 0.20\) m'dir. Yatayda ivme olmadığı için \(x\) hatasızdır. Proje testlerinde \(V = 40\) m/s, \(\theta = 45°\) atışının Euler menzili \(V^2/g = 163.1\) m ile %0.5 içinde çıkar.</p>
+        <p class="vurgu">Önemli olan şu: kesikli önizleme çizgisi, NPC'nin hesabı ve gerçek atış aynı Euler fonksiyonunu çağırır. Bu yüzden ekranda gördüğün yol, merminin izleyeceği yolun ta kendisidir.</p>
+      </section>
+
+      <section id="carpisma">
+        <h2><span class="no mono">05</span> Çarpışma ve yüzey normali</h2>
+        <p>Arazi, 0.5 m aralıklı yükseklik değerlerinden oluşan bir \(h(x)\) dizisidir; aradaki noktalar doğrusal ara değerle bulunur. Tepeler birkaç sinüs dalgasının toplamıdır:</p>
+        $$h(x) = h_0 + \sum_{k=1}^{3} A_k \sin\!\left(\frac{2\pi x}{\lambda_k} + \varphi_k\right)$$
+        <p>Her Euler adımından sonra \(y \le h(x)\) ise mermi yerin altına geçmiştir. Adımın içindeki gerçek temas noktası <b>ikiye bölme (bisection)</b> ile 16 iterasyonda bulunur (hata \(2^{-16}\) adım uzunluğu). Tanklar, ağaçlar (gövde + taç) ve taşlar daire olarak modellenir; adımın doğru parçası \(\vec r(s) = \vec r_n + s\,(\vec r_{n+1}-\vec r_n)\) ile dairenin kesişimi \(s\) için ikinci dereceden bir denklemdir ve en küçük kök ilk çarpışmayı verir. Ağaca veya taşa çarpan mermi orada patlar, engel parçalanır.</p>
+        <p>Sekme için yüzeyin dik yönü gerekir. Eğim \(h'(x)\) merkezi farkla hesaplanır ve birim normal:</p>
+        $$\hat n = \frac{\left(-h'(x),\ 1\right)}{\sqrt{1 + h'(x)^2}}$$
+        <p>Patlamada toprak, kosinüs profilli yayvan bir çanak biçiminde çıkarılır (krater). Yarıçapı \(r\) olan patlamada çanağın yarı genişliği \(R = 1.35\,r\), derinliği \(d = 0.7\,r\)'dir:</p>
+        $$\Delta h(x) = \frac{d}{2}\left(1 + \cos\frac{\pi\,(x - x_0)}{R}\right), \qquad |x - x_0| < R$$
+        <p>Bu profilin en dik yeri \(\max|h'| = \dfrac{\pi d}{2R} \approx 0.81\) yani yaklaşık 39°'dir. Tank yokuşta yavaşlar (\(v = v_0\,(1 - 0.3\,h')\)) ama kraterden çıkabilir. Tank veya engel altındaki zemin boşalırsa aynı Euler adımıyla düşer.</p>
+      </section>
+
+      <section id="sekme">
+        <h2><span class="no mono">06</span> Sekme ve restitüsyon katsayısı</h2>
+        <p>Sekme mermisi yere çarptığında hızını iki bileşene ayırırız: yüzeye dik \(v_n = \vec v\cdot\hat n\) ve yüzeye paralel (teğet) bileşen. Sürtünme yoksa teğet bileşen değişmez, dik bileşen ise <b>restitüsyon katsayısı</b> \(e\) ile ters döner: \(v_n' = -e\,v_n\). Vektör olarak:</p>
+        $$\vec v\,' = \vec v - (1+e)\,(\vec v\cdot\hat n)\,\hat n$$
+        <p>\(e = 1\) tam esnek çarpışma (enerji korunur), \(e = 0\) tam esnek olmayan çarpışmadır (mermi yüzeye yapışır). Oyunda \(e = 0.6\). Kaybolan kinetik enerji:</p>
+        $$\Delta K = -\tfrac12\,m\,(1-e^2)\,v_n^2$$
+        <p>\(e = 0.6\) için dik bileşenin enerjisinin \(1 - 0.36 = \%64\)'ü ısıya ve sese gider. Uçuş sırasında fizik paneli her sekmede \(K\)'nin ne kadar düştüğünü yazar.</p>
+      </section>
+
+      <section id="parcali">
+        <h2><span class="no mono">07</span> Parçalanma ve momentum korunumu</h2>
+        <p>Parçalı mermi tepe noktasında (\(v_y\) işaret değiştirdiğinde) dört parçaya ayrılır. Patlama çok kısa sürdüğü için o an etkiyen dış kuvvetin (ağırlık) impulsu ihmal edilebilir; yalnızca iç kuvvetler etki eder ve <b>toplam momentum korunur</b>:</p>
+        $$m\,\vec v = \sum_{i=1}^{4} m_i\,\vec v_i, \qquad m_i = \frac{m}{4}, \qquad \vec v_i = \vec v + \Delta\vec v_i$$
+        <p>Oyunda \(\Delta\vec v_i = s\,(\cos\varphi_i,\ \sin\varphi_i)\), \(\varphi_i = 45° + 90°\,i\) seçilir. Bu dört vektörün toplamı sıfırdır, dolayısıyla \(\sum m_i\vec v_i = m\vec v\). Kinetik enerji ise korunmaz; patlamanın kimyasal enerjisi kadar artar:</p>
+        $$K_{sonra} = \sum \tfrac12 m_i\,|\vec v + \Delta\vec v_i|^2 = \tfrac12 m v^2 + \underbrace{\vec v\cdot\sum m_i\Delta\vec v_i}_{=\,0} + \tfrac12 m s^2$$
+        <p>İlginç sonuç: parçaların <b>kütle merkezi</b>, parçalanma olmasaydı merminin izleyeceği parabolü izlemeye devam eder (ilk parça yere değene kadar).</p>
+      </section>
+
+      <section id="agir">
+        <h2><span class="no mono">08</span> Ağır mermi ve Galileo</h2>
+        <p>Ağır mermi standart mermiden üç kat kütlelidir ama yolu değişmez. Newton'un ikinci yasası \(m\vec a = m\vec g\) ise kütle sadeleşir: \(\vec a = \vec g\). Hava direnci olmadığında bütün cisimler aynı ivmeyle düşer. Galileo'nun bu fikri 1971'de Apollo 15'te Ay yüzeyinde bir çekiç ve bir tüyle gösterildi. Oyunda kütlenin etkisi yalnızca momentumda (\(p = mV\)) ve oyun kuralı olarak daha büyük patlama yarıçapında görülür.</p>
+      </section>
+
+      <section id="npc">
+        <h2><span class="no mono">09</span> NPC nasıl nişan alır</h2>
+        <p>NPC'nin sorusu tersten sorulmuş eğik atış problemidir: hedef namluya göre \((x, y)\) konumunda ve hız \(V\) ise hangi \(\theta\) gerekir? Yörünge denkleminde \(1/\cos^2\theta = 1 + \tan^2\theta\) özdeşliği kullanılırsa \(\tan\theta\) için ikinci dereceden bir denklem çıkar:</p>
+        $$\frac{g x^2}{2V^2}\tan^2\theta - x\tan\theta + \left(y + \frac{g x^2}{2V^2}\right) = 0$$
+        $$\tan\theta = \frac{V^2 \pm \sqrt{V^4 - g\left(g x^2 + 2 y V^2\right)}}{g\,x}$$
+        <p>Artı ve eksi işaretleri yüksek ve alçak yayı verir. Kök içi negatifse hedef o hızla menzil dışıdır. NPC her denenen \(V\) için iki açıyı hesaplar ve her birini oyunun Euler simülasyonunda çalıştırır; böylece arada tepe varsa o yay elenir. En iyi aday koordinat inişiyle (açı ve hızı küçük adımlarla değiştirerek) iyileştirilir. Son olarak zorluğa göre normal dağılımlı hata eklenir: Kolay \(\sigma_\theta = 6°\), Orta \(3°\), Zor \(1°\). Orta ve Zor seviyede bu hata her atışta azalır: NPC öğrenir.</p>
+      </section>
+
+      <section id="hasar">
+        <h2><span class="no mono">10</span> Hasar modeli (oyun kuralı)</h2>
+        <p>Bu bölüm fizik değil, oyun tasarımıdır. Patlamanın merkezine \(d\) uzaklıktaki tank \(D = D_{max}\,(1 - d/r)\) hasar alır; \(r\) patlama yarıçapıdır. Doğrudan isabette +5 bonus eklenir. Her tank 100 canla başlar.</p>
+        <table class="tablo mono">
+          <caption>Silahlar</caption>
+          <thead><tr><th scope="col">Silah</th><th scope="col">m (kg)</th><th scope="col">r (m)</th><th scope="col">D<sub>max</sub></th><th scope="col">Fizik kavramı</th></tr></thead>
+          <tbody id="silah-tablo"></tbody>
+        </table>
+      </section>
+
+      <section id="kunye" class="kunye-kart panel">
+        <h2>Künye</h2>
+        <dl id="kunye-liste"></dl>
+        <p class="kaynak"><b>Kaynaklar:</b> D. Halliday, R. Resnick, J. Walker, <i>Fundamentals of Physics</i>, Bölüm 4 (iki boyutta hareket) ve Bölüm 9 (momentum, çarpışmalar); R. A. Serway, J. W. Jewett, <i>Physics for Scientists and Engineers</i>, Bölüm 4 ve 9. Grafik: three.js, formüller: KaTeX.</p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="js/fizik/plot.js"></script>
+</body>
+</html>

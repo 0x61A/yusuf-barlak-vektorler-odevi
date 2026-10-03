@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Yusuf Barlak Vektörler Ödevi</title>
+  <meta name="description" content="Yusuf Barlak Vektörler Ödevi: Fizik I projesi. Açı ve hızı ayarla, hız vektörünü sin ve cos ile bileşenlerine ayır, Euler yöntemiyle uçan mermiyle rakip tankı vur.">
+  <meta name="theme-color" content="#9fd3f5">
+  <meta property="og:title" content="Yusuf Barlak Vektörler Ödevi">
+  <meta property="og:description" content="Eğik atış, vektörler ve Euler yöntemiyle 3D sıra tabanlı tank oyunu. Fizik I projesi.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/menu.css">
+</head>
+<body class="menu">
+  <div class="manzara" aria-hidden="true">
+    <span class="bulut b1"></span><span class="bulut b2"></span><span class="bulut b3"></span>
+    <svg class="tepeler" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path d="M0 150 C 200 90 380 120 560 140 S 900 80 1100 120 S 1340 100 1440 130 V320 H0z" fill="#8cc265"/>
+      <path d="M0 210 C 240 160 420 200 640 190 S 1000 150 1200 185 S 1380 175 1440 180 V320 H0z" fill="#5f9a35"/>
+      <path d="M0 262 C 300 245 600 270 900 255 S 1300 250 1440 258 V320 H0z" fill="#7a5532"/>
+    </svg>
+    <svg class="tank-cizim" viewBox="0 0 200 90">
+      <path d="M40 40 Q 120 -30 196 52" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round"/>
+      <rect x="10" y="58" width="70" height="20" rx="8" fill="#2b2b2b"/>
+      <circle cx="22" cy="68" r="6" fill="#55585b"/><circle cx="38" cy="68" r="6" fill="#55585b"/><circle cx="54" cy="68" r="6" fill="#55585b"/><circle cx="70" cy="68" r="6" fill="#55585b"/>
+      <path d="M8 58 L82 58 L76 44 L16 44 Z" fill="#55752f"/>
+      <rect x="30" y="32" width="28" height="14" rx="6" fill="#476426"/>
+      <line x1="52" y1="38" x2="78" y2="24" stroke="#2b2d2f" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <main class="giris">
+    <section class="baslik-kart kart">
+      <p class="ust-yazi">Fizik I · Eğik atış projesi</p>
+      <h1 class="logo"><span class="ad">Yusuf Barlak</span><span class="konu">Vektörler Ödevi</span></h1>
+      <p class="aciklama">Açıyı ve hızı sen seç, hız vektörünü <b>sin</b> ve <b>cos</b> ile bileşenlerine ayır, mermiyi yerçekimine bırak. Rakip tank da aynı denklemlerle nişan alıyor.</p>
+      <figure class="diyagram" aria-labelledby="diyagram-aciklama">
+        <svg viewBox="0 0 420 190" aria-hidden="true">
+          <defs>
+            <marker id="ok-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f08c00"/></marker>
+            <marker id="ok-x" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1c7ed6"/></marker>
+            <marker id="ok-y" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e03131"/></marker>
+          </defs>
+          <path d="M0 170 L420 170" stroke="#5f9a35" stroke-width="4"/>
+          <path class="yol" d="M46 150 Q 210 -40 380 170"/>
+          <line x1="46" y1="150" x2="46" y2="80" stroke="#e03131" stroke-width="3" marker-end="url(#ok-y)"/>
+          <line x1="46" y1="150" x2="106" y2="150" stroke="#1c7ed6" stroke-width="3" marker-end="url(#ok-x)"/>
+          <line x1="108" y1="150" x2="108" y2="78" class="kesik"/>
+          <line x1="46" y1="78" x2="108" y2="78" class="kesik"/>
+          <line x1="46" y1="150" x2="106" y2="80" stroke="#f08c00" stroke-width="3.5" marker-end="url(#ok-v)"/>
+          <path d="M70 150 A 24 24 0 0 0 61.7 131.9" fill="none" stroke="#f08c00" stroke-width="2"/>
+          <text x="74" y="143" class="etk" fill="#c06c00">θ</text>
+          <text x="80" y="102" class="etk" fill="#c06c00">V</text>
+          <text x="114" y="156" class="etk" fill="#1c7ed6">Vx</text>
+          <text x="16" y="88" class="etk" fill="#e03131">Vy</text>
+          <rect x="30" y="152" width="28" height="12" rx="3" fill="#55752f"/>
+          <rect x="368" y="158" width="26" height="12" rx="3" fill="#8b5a2b"/>
+          <text x="205" y="18" class="etk kucuk" text-anchor="middle">h_max = Vy² / 2g</text>
+          <text x="236" y="186" class="etk kucuk" text-anchor="middle">R = V²·sin2θ / g</text>
+        </svg>
+        <figcaption id="diyagram-aciklama" class="gorunmez">Atış hızı V, θ açısıyla yatay bileşen Vx = V·cosθ ve dikey bileşen Vy = V·sinθ olarak ayrılır; mermi parabol çizerek rakibe ulaşır.</figcaption>
+      </figure>
+    </section>
+
+    <nav class="menu-liste" aria-label="Ana menü">
+      <button class="btn btn--green menu-btn buyuk" type="button" id="btn-savas">Oyna</button>
+      <a class="btn btn--blue menu-btn" href="oyun.html?mod=deney">Deney modu</a>
+      <a class="btn btn--orange menu-btn" href="fizik.html">Fizik konusu</a>
+      <div class="ikili">
+        <button class="btn btn--gray menu-btn" type="button" id="btn-nasil">Nasıl oynanır</button>
+        <button class="btn btn--gray menu-btn" type="button" id="btn-ayar">Ayarlar</button>
+      </div>
+    </nav>
+  </main>
+
+  <footer class="kunye" id="kunye"></footer>
+
+  <dialog id="savas-dlg" aria-labelledby="savas-baslik">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="savas-baslik" class="popup-baslik">Maç ayarları</h2>
+    <form id="savas-form" method="dialog">
+      <fieldset class="secenek-grup">
+        <legend>Rakip sayısı</legend>
+        <div class="secenekler">
+          <label class="secenek"><input type="radio" name="npc" value="1"><span>1 rakip</span></label>
+          <label class="secenek"><input type="radio" name="npc" value="2"><span>2 rakip</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="secenek-grup">
+        <legend>Zorluk</legend>
+        <div class="secenekler">
+          <label class="secenek"><input type="radio" name="zorluk" value="kolay"><span>Kolay</span></label>
+          <label class="secenek"><input type="radio" name="zorluk" value="orta"><span>Orta</span></label>
+          <label class="secenek"><input type="radio" name="zorluk" value="zor"><span>Zor</span></label>
+        </div>
+      </fieldset>
+      <p class="not">Rakip, nişanı aynı fizik denklemleriyle hesaplar, sonra zorluğa göre hata ekler: Kolay ±6°, Orta ±3°, Zor ±1°.</p>
+      <div class="dlg-alt">
+        <button class="btn btn--green btn--genis" value="basla" type="submit">Başla</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="nasil-dlg" aria-labelledby="nasil-baslik">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="nasil-baslik" class="popup-baslik">Nasıl oynanır</h2>
+    <p class="not">Sıran gelince tankını yakıtın yettiği kadar hareket ettir, açıyı ve hızı ayarla, ateş et. Noktalı yol merminin tam rotasını gösterir. Ağaç ve taşlar mermiyi durdurur; üstüne sürersen tank yavaşlar, iter ve onları kırar. Rakibin canını sıfırlayan kazanır.</p>
+    <table class="anahtar-tablo">
+      <caption class="gorunmez">Kontroller</caption>
+      <tbody>
+        <tr><th scope="row">Hareket</th><td><kbd>A</kbd> <kbd>D</kbd> veya ◀ ▶ düğmeleri</td></tr>
+        <tr><th scope="row">Açı θ</th><td><kbd>W</kbd> <kbd>S</kbd> (Shift: 0.1°)</td></tr>
+        <tr><th scope="row">Hız V</th><td><kbd>Q</kbd> <kbd>E</kbd> (Shift: 0.1)</td></tr>
+        <tr><th scope="row">Nişan</th><td>Sahnede geriye sürükle (sapan gibi)</td></tr>
+        <tr><th scope="row">Silah</th><td><kbd>1</kbd>–<kbd>5</kbd></td></tr>
+        <tr><th scope="row">Ateş</th><td><kbd>Space</kbd> veya ATEŞ düğmesi</td></tr>
+        <tr><th scope="row">Kamera</th><td>Tekerlek / iki parmak: zoom · Sağ tık: döndür · <kbd>M</kbd>: harita · <kbd>R</kbd>: sıfırla</td></tr>
+        <tr><th scope="row">Menü</th><td><kbd>Esc</kbd> veya sağ üstteki duraklat düğmesi</td></tr>
+      </tbody>
+    </table>
+  </dialog>
+
+  <dialog id="ayar-dlg" aria-labelledby="ayar-baslik">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="ayar-baslik" class="popup-baslik">Ayarlar</h2>
+    <form method="dialog" id="ayar-form">
+      <fieldset class="secenek-grup">
+        <legend>Grafik kalitesi</legend>
+        <div class="secenekler">
+          <label class="secenek"><input type="radio" name="kalite" value="otomatik"><span>Otomatik</span></label>
+          <label class="secenek"><input type="radio" name="kalite" value="yuksek"><span>Yüksek</span></label>
+          <label class="secenek"><input type="radio" name="kalite" value="orta"><span>Orta</span></label>
+          <label class="secenek"><input type="radio" name="kalite" value="dusuk"><span>Düşük</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="secenek-grup">
+        <legend>Ses efektleri</legend>
+        <div class="secenekler">
+          <label class="secenek"><input type="radio" name="ses" value="acik"><span>Açık</span></label>
+          <label class="secenek"><input type="radio" name="ses" value="kapali"><span>Kapalı</span></label>
+        </div>
+      </fieldset>
+      <p class="not">Otomatik: oyun takılırsa kalite kendiliğinden bir kademe iner.</p>
+      <div class="dlg-alt"><button class="btn btn--green btn--genis">Tamam</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/menu.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Oyun · Yusuf Barlak Vektörler Ödevi</title>
+  <meta name="description" content="Yusuf Barlak Vektörler Ödevi: eğik atış fiziğiyle sıra tabanlı 3D tank oyunu. Açı ve hızı ayarla, Vx = V·cosθ ve Vy = V·sinθ ile nişan al.">
+  <meta name="theme-color" content="#9fd3f5">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body class="oyun">
+  <canvas id="sahne" aria-label="Oyun sahnesi. Sol tıkla geriye sürükleyerek nişan al."></canvas>
+  <div id="etiketler" class="etiketler" aria-hidden="true"></div>
+
+  <header class="ust-bar">
+    <div id="can-kartlari" class="can-kartlari"></div>
+    <div id="sira-bandi" class="sira-bandi" role="status" aria-live="polite"></div>
+    <nav class="araclar" aria-label="Kamera ve oyun araçları">
+      <button id="btn-zoom-out" class="yuvarlak" type="button" aria-label="Uzaklaş" title="Uzaklaş (−)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M7 10h6M15 15l5 5"/></svg>
+      </button>
+      <button id="btn-zoom-in" class="yuvarlak" type="button" aria-label="Yakınlaş" title="Yakınlaş (+)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M7 10h6M10 7v6M15 15l5 5"/></svg>
+      </button>
+      <button id="btn-harita" class="yuvarlak" type="button" aria-pressed="false" aria-label="Haritanın tamamını göster" title="Harita (M)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
+      </button>
+      <button id="btn-kamera" class="yuvarlak" type="button" aria-label="Kamerayı tanka döndür" title="Kamerayı sıfırla (R)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/></svg>
+      </button>
+      <button id="btn-agir" class="yuvarlak" type="button" aria-pressed="false" aria-label="Ağır çekim" title="Ağır çekim ×0.25 (T)">
+        <span class="mono">¼×</span>
+      </button>
+      <button id="btn-hizli" class="yuvarlak" type="button" aria-pressed="false" aria-label="Hızlı ileri" title="Hızlı ileri ×4 (F)" hidden>
+        <span class="mono">4×</span>
+      </button>
+      <button id="btn-fizik" class="yuvarlak" type="button" aria-pressed="true" aria-controls="fizik-paneli" aria-label="Fizik paneli" title="Fizik paneli">
+        <span class="mono">Σ</span>
+      </button>
+      <button id="btn-menu" class="yuvarlak koyu" type="button" aria-label="Duraklat ve menü" title="Menü (Esc)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <aside id="fizik-paneli" class="kart yan-kart fizik-paneli" aria-labelledby="fizik-baslik">
+    <div class="kart-ust">
+      <h2 id="fizik-baslik">Fizik</h2>
+      <button id="btn-fizik-kapat" class="kapat" type="button" aria-label="Fizik panelini kapat">×</button>
+    </div>
+    <div id="fizik-icerik" class="kart-govde"></div>
+  </aside>
+
+  <section id="deney-araclari" class="kart yan-kart deney-araclari" aria-labelledby="deney-baslik" hidden>
+    <div class="kart-ust">
+      <h2 id="deney-baslik">Laboratuvar</h2>
+    </div>
+    <div class="kart-govde">
+      <label class="satir">
+        <span>Gezegen</span>
+        <select id="gezegen"></select>
+      </label>
+      <div class="deney-tablo-kap">
+        <table class="deney-tablo mono">
+          <caption class="gorunmez">Atış kayıtları</caption>
+          <thead><tr><th>#</th><th>θ°</th><th>V</th><th>g</th><th>Δx</th><th>h<sub>max</sub></th><th>t</th></tr></thead>
+          <tbody id="deney-kayit"></tbody>
+        </table>
+      </div>
+      <button id="btn-temizle" class="btn btn--gray btn--genis kucuk" type="button">İzleri temizle</button>
+    </div>
+  </section>
+
+  <div id="analiz" class="kart analiz" role="status" aria-live="polite" hidden></div>
+  <div id="sira-popup" class="sira-popup" aria-hidden="true"></div>
+
+  <footer class="alt-bar">
+    <section class="hareket" aria-label="Hareket">
+      <div class="yakit" id="yakit-kutu">
+        <svg class="yakit-simge" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-3-3M7 8h5"/></svg>
+        <div class="bar" role="meter" aria-label="Yakıt" aria-valuemin="0" aria-valuemax="100"><i id="yakit-dolu"></i></div>
+        <output id="yakit-deger">100</output>
+      </div>
+      <div class="hareket-btn">
+        <button id="btn-sol" class="ok-btn" type="button" aria-label="Sola git (A)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button id="btn-sag" class="ok-btn" type="button" aria-label="Sağa git (D)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="silahlar kart" aria-label="Silah seçimi">
+      <div id="silahlar" class="silah-liste" role="radiogroup" aria-label="Silahlar"></div>
+    </section>
+
+    <section class="nisan kart" aria-label="Nişan">
+      <div class="nisan-satir">
+        <label for="aci" class="nisan-etiket"><span class="mono">θ</span><span class="uzun">Açı</span></label>
+        <input type="range" id="aci" min="0" max="180" step="0.1" value="45">
+        <span class="sayi-kutu"><input type="number" id="aci-sayi" class="mono" min="0" max="180" step="0.1" value="45" aria-label="Açı (derece)"><span>°</span></span>
+      </div>
+      <div class="nisan-satir">
+        <label for="guc" class="nisan-etiket"><span class="mono">V</span><span class="uzun">Hız</span></label>
+        <input type="range" id="guc" min="5" max="55" step="0.1" value="35">
+        <span class="sayi-kutu"><input type="number" id="guc-sayi" class="mono" min="5" max="55" step="0.1" value="35" aria-label="Atış hızı (m/s)"><span>m/s</span></span>
+      </div>
+    </section>
+    <button id="btn-ates" class="ates" type="button">ATEŞ</button>
+  </footer>
+
+  <dialog id="duraklat-dlg" aria-labelledby="duraklat-baslik">
+    <button class="kapat" type="button" data-kapat aria-label="Devam et">×</button>
+    <h2 id="duraklat-baslik" class="popup-baslik">Duraklatıldı</h2>
+    <div class="menu-butonlar">
+      <button id="btn-devam" class="btn btn--green btn--genis" type="button">Devam et</button>
+      <button id="btn-yeniden" class="btn btn--blue btn--genis" type="button">Yeniden başlat</button>
+      <button id="btn-kontroller" class="btn btn--orange btn--genis" type="button">Kontroller</button>
+      <a class="btn btn--gray btn--genis" href="index.html">Ana menü</a>
+    </div>
+    <fieldset class="secenek-grup">
+      <legend>Grafik kalitesi</legend>
+      <div class="secenekler" id="kalite-secenek">
+        <label class="secenek"><input type="radio" name="kalite" value="otomatik"><span>Otomatik</span></label>
+        <label class="secenek"><input type="radio" name="kalite" value="yuksek"><span>Yüksek</span></label>
+        <label class="secenek"><input type="radio" name="kalite" value="orta"><span>Orta</span></label>
+        <label class="secenek"><input type="radio" name="kalite" value="dusuk"><span>Düşük</span></label>
+      </div>
+    </fieldset>
+    <p class="not" id="kalite-durum"></p>
+    <fieldset class="secenek-grup">
+      <legend>Ses efektleri</legend>
+      <div class="secenekler">
+        <label class="secenek"><input type="radio" name="ses" value="acik"><span>Açık</span></label>
+        <label class="secenek"><input type="radio" name="ses" value="kapali"><span>Kapalı</span></label>
+      </div>
+    </fieldset>
+  </dialog>
+
+  <dialog id="kontrol-dlg" aria-labelledby="kontrol-baslik">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="kontrol-baslik" class="popup-baslik">Kontroller</h2>
+    <table class="anahtar-tablo">
+      <caption class="gorunmez">Kontroller</caption>
+      <tbody>
+        <tr><th scope="row">Hareket</th><td><kbd>A</kbd> <kbd>D</kbd> / ◀ ▶ düğmeleri</td></tr>
+        <tr><th scope="row">Açı θ</th><td><kbd>W</kbd> <kbd>S</kbd> (Shift: 0.1°)</td></tr>
+        <tr><th scope="row">Hız V</th><td><kbd>Q</kbd> <kbd>E</kbd> (Shift: 0.1)</td></tr>
+        <tr><th scope="row">Nişan</th><td>Sahnede geriye sürükle (sapan)</td></tr>
+        <tr><th scope="row">Silah</th><td><kbd>1</kbd>–<kbd>5</kbd></td></tr>
+        <tr><th scope="row">Ateş</th><td><kbd>Space</kbd> / ATEŞ</td></tr>
+        <tr><th scope="row">Kamera</th><td>Tekerlek / iki parmak: zoom · Sağ tık: döndür · <kbd>M</kbd> harita · <kbd>R</kbd> sıfırla</td></tr>
+        <tr><th scope="row">Engeller</th><td>Ağaç ve taşlar mermiyi durdurur. Üstüne sürünce tank yavaşlar, iter ve kırar.</td></tr>
+      </tbody>
+    </table>
+  </dialog>
+
+  <div id="oyun-sonu" class="perde" hidden>
+    <div class="kart sonuc-kart" role="dialog" aria-modal="true" aria-labelledby="sonuc-baslik">
+      <h2 id="sonuc-baslik"></h2>
+      <div id="sonuc-yildiz" class="yildizlar" role="img"></div>
+      <dl id="sonuc-istatistik" class="istatistik"></dl>
+      <div class="dlg-alt">
+        <a class="btn btn--gray" href="index.html">Menü</a>
+        <button id="btn-tekrar" class="btn btn--green" type="button">Tekrar oyna</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dondur" class="dondur">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="22" y="8" width="20" height="36" rx="3"/><path d="M14 50a22 22 0 0 0 36 0M50 50l-1-6M50 50l-6 0"/></svg>
+    <p>Daha rahat oynamak için telefonu yan çevir.</p>
+    <button id="btn-dondur-gec" class="btn" type="button">Yine de devam et</button>
+  </div>
+
+  <div id="yukleniyor" class="yukleniyor" role="status">Harita hazırlanıyor…</div>
+  <noscript><p class="noscript">Bu oyun JavaScript gerektirir.</p></noscript>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

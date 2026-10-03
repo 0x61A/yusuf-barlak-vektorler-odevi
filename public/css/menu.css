@@ -1,0 +1,285 @@
+/* Ana menü: gökyüzü, tepeler, başlık kartı ve büyük butonlar */
+
+body.menu {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: linear-gradient(#5aa9e6 0%, #9fd3f5 45%, #e3f2fc 75%);
+}
+
+.manzara {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tepeler {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 34vh;
+}
+
+.tank-cizim {
+  position: absolute;
+  left: 6vw;
+  bottom: 13vh;
+  width: clamp(140px, 18vw, 240px);
+}
+
+.bulut {
+  position: absolute;
+  width: 180px;
+  height: 56px;
+  border-radius: 999px;
+  background: #fff;
+  opacity: 0.9;
+  animation: suzul 60s linear infinite;
+}
+
+.bulut::before,
+.bulut::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.bulut::before {
+  width: 80px;
+  height: 80px;
+  left: 28px;
+  top: -40px;
+}
+
+.bulut::after {
+  width: 60px;
+  height: 60px;
+  left: 92px;
+  top: -26px;
+}
+
+.b1 {
+  top: 12vh;
+  left: -10vw;
+}
+
+.b2 {
+  top: 26vh;
+  left: 40vw;
+  transform: scale(0.7);
+  animation-duration: 80s;
+}
+
+.b3 {
+  top: 8vh;
+  left: 75vw;
+  transform: scale(0.85);
+  animation-duration: 95s;
+}
+
+@keyframes suzul {
+  to {
+    translate: 60vw 0;
+  }
+}
+
+.giris {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
+  max-width: 1100px;
+  min-height: calc(100dvh - 70px);
+  margin: 0 auto;
+  padding: 32px 16px 24px;
+}
+
+.baslik-kart {
+  padding: clamp(18px, 3vw, 30px);
+}
+
+.ust-yazi {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fff3d6;
+  color: #9a6400;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.logo .ad {
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  font-weight: 600;
+  color: var(--green-d);
+}
+
+.logo .konu {
+  font-size: clamp(2.4rem, 6.4vw, 4.2rem);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.aciklama {
+  max-width: 36em;
+  margin: 14px 0 16px;
+  color: var(--ink-2);
+  font-size: 1.05rem;
+}
+
+.aciklama b {
+  font-family: var(--font-mono);
+  color: var(--blue-d);
+}
+
+.diyagram {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--sky-2);
+}
+
+.diyagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.diyagram .yol {
+  fill: none;
+  stroke: #3d4b5c;
+  stroke-width: 3;
+  stroke-dasharray: 1 9;
+  stroke-linecap: round;
+  animation: akis 2.4s linear infinite;
+}
+
+.diyagram .kesik {
+  stroke: #8792a2;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.diyagram .etk {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.diyagram .etk.kucuk {
+  font-size: 11px;
+  font-weight: 500;
+  fill: #4a5563;
+}
+
+@keyframes akis {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.menu-liste {
+  display: grid;
+  gap: 16px;
+}
+
+.menu-btn {
+  width: 100%;
+  min-height: 60px;
+  font-size: 1.3rem;
+}
+
+.menu-btn.buyuk {
+  min-height: 78px;
+  font-size: 1.9rem;
+}
+
+.ikili {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ikili .menu-btn {
+  min-height: 52px;
+  font-size: 1.05rem;
+}
+
+.kunye {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 14px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: 0 auto 14px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.kunye b {
+  color: var(--ink);
+}
+
+@media (max-width: 860px) {
+  .giris {
+    grid-template-columns: 1fr;
+    padding-top: 20px;
+  }
+
+  .diyagram {
+    max-width: 420px;
+  }
+
+  .kunye {
+    border-radius: 16px;
+  }
+}
+
+/* Telefon yatay: başlık kartı kısalır, diyagram gizlenir */
+@media (max-height: 520px) and (orientation: landscape) {
+  .giris {
+    grid-template-columns: 1fr 1fr;
+    min-height: auto;
+    padding-top: 14px;
+  }
+
+  .diyagram,
+  .aciklama {
+    display: none;
+  }
+
+  .menu-liste {
+    gap: 12px;
+  }
+
+  .menu-btn {
+    min-height: 48px;
+    font-size: 1.1rem;
+  }
+
+  .menu-btn.buyuk {
+    min-height: 58px;
+    font-size: 1.5rem;
+  }
+}
